@@ -1,0 +1,803 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>木芽英语 · 老师后台高保真原型</title>
+<style>
+:root{
+  --bg:#F5F4F0; --surface:#FFFFFF;
+  --primary:#FF8F1F; --primary-strong:#E67E00; --primary-soft:#FFF3E6;
+  --success:#22A45D; --success-soft:#EAF6EF;
+  --warn:#D9930D; --warn-soft:#FBF3E0;
+  --danger:#E5484D; --danger-soft:#FCEDEE;
+  --text:#26261F; --text2:#6B6B60; --text3:#9C9C90;
+  --border:#E8E6DE;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,"PingFang SC","Noto Sans SC","Helvetica Neue",sans-serif;background:var(--bg);color:var(--text);font-size:14px}
+.frame{width:1280px;margin:24px auto;background:var(--bg);border-radius:16px;overflow:hidden;box-shadow:0 8px 32px rgba(38,38,31,.12);display:flex;min-height:820px}
+
+/* ===== 侧边导航 ===== */
+.side{width:216px;background:#2A2A22;color:#CFCDC2;padding:20px 12px;flex:none;display:flex;flex-direction:column}
+.side .brand{display:flex;align-items:center;gap:10px;padding:4px 8px 18px;border-bottom:1px solid #3B3B30;margin-bottom:14px}
+.side .brand b{color:#fff;font-size:16px}
+.side .brand span{display:block;font-size:11px;color:#8A887C;margin-top:1px}
+.navitem{display:flex;align-items:center;gap:10px;padding:11px 12px;border-radius:10px;cursor:pointer;font-size:14px;margin-bottom:2px}
+.navitem:hover{background:#35352B}
+.navitem.on{background:var(--primary);color:#fff;font-weight:600}
+.navitem .dot{width:8px;height:8px;border-radius:50%;background:#6B6B60;flex:none}
+.navitem.on .dot{background:#fff}
+.side .foot{margin-top:auto;font-size:11px;color:#77756A;padding:10px 8px;line-height:1.8}
+
+/* ===== 主区 ===== */
+.main{flex:1;display:flex;flex-direction:column;min-width:0}
+.topbar{height:60px;background:var(--surface);border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 24px;gap:12px}
+.topbar .pt{font-size:16px;font-weight:600}
+.topbar .sub{font-size:12px;color:var(--text3)}
+.topbar .spacer{flex:1}
+.avatar{width:34px;height:34px;border-radius:50%;background:#EAF4EE;display:flex;align-items:center;justify-content:center;font-size:12px;color:#3FA66A;font-weight:600}
+.page{display:none;padding:20px 24px;flex:1}
+.page.active{display:block}
+
+/* ===== 通用组件 ===== */
+.card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:16px 18px;margin-bottom:16px}
+.card h3{font-size:15px;font-weight:600;margin-bottom:12px}
+.hint{font-size:12px;color:var(--text3);line-height:1.7}
+.btn{border:none;border-radius:8px;padding:8px 16px;font-size:13px;cursor:pointer;font-weight:500}
+.btn-p{background:var(--primary);color:#fff}
+.btn-p:hover{background:var(--primary-strong)}
+.btn-g{background:var(--surface);border:1px solid var(--border);color:var(--text2)}
+.btn-g:hover{border-color:var(--primary);color:var(--primary-strong)}
+.btn-s{background:var(--primary-soft);color:var(--primary-strong);border:1px solid #FFD9AE}
+.btn-danger{background:var(--danger-soft);color:var(--danger);border:1px solid #F5C2C4}
+.chip{display:inline-block;font-size:11px;border-radius:6px;padding:2px 8px;font-weight:500}
+.chip.ok{background:var(--success-soft);color:var(--success)}
+.chip.warn{background:var(--warn-soft);color:var(--warn)}
+.chip.bad{background:var(--danger-soft);color:var(--danger)}
+.chip.gray{background:#F0EEE8;color:var(--text2)}
+.chip.blue{background:#EAF0F7;color:#4A6FA5}
+
+/* 表格 */
+table{width:100%;border-collapse:collapse}
+th{font-size:12px;color:var(--text2);text-align:left;padding:9px 10px;border-bottom:1px solid var(--border);white-space:nowrap;cursor:pointer;user-select:none}
+th:hover{color:var(--primary-strong)}
+th .arr{font-size:10px;margin-left:3px;color:var(--text3)}
+td{padding:11px 10px;border-bottom:1px solid #F0EEE8;font-variant-numeric:tabular-nums;font-size:13px;vertical-align:middle}
+tr.clickable{cursor:pointer}
+tr.clickable:hover td{background:#FBF9F4}
+.mono{font-variant-numeric:tabular-nums}
+.namecell{display:flex;align-items:center;gap:9px}
+.namecell .na{width:28px;height:28px;border-radius:50%;background:#EAF4EE;color:#3FA66A;font-size:11px;font-weight:600;display:flex;align-items:center;justify-content:center;flex:none}
+
+/* 时间筛选条 */
+.tf{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:14px}
+.seg{display:flex;background:var(--surface);border:1px solid var(--border);border-radius:9px;overflow:hidden}
+.seg div{padding:7px 16px;font-size:13px;cursor:pointer;color:var(--text2)}
+.seg div.on{background:var(--primary);color:#fff;font-weight:600}
+.datepick{display:flex;align-items:center;gap:6px;background:var(--surface);border:1px solid var(--border);border-radius:9px;padding:7px 12px;font-size:13px;color:var(--text2);cursor:pointer}
+.tf .lab{font-size:13px;color:var(--text2)}
+
+/* 日期分组视图（学员详情，与学员端一致） */
+.dg{margin-bottom:14px}
+.dg .dh{display:flex;align-items:baseline;gap:8px;font-size:15px;font-weight:600;margin-bottom:8px;padding:2px 2px}
+.dg .dh .wd{font-size:12px;color:var(--text3);font-weight:400}
+.wcard{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:13px 16px;margin-bottom:10px}
+.wcard .wt{font-size:14px;font-weight:600;display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.wcard .wd2{font-size:12px;color:var(--text3);margin:3px 0 8px}
+.wstat{display:flex;gap:20px;font-size:12px;color:var(--text2);flex-wrap:wrap}
+.wstat b{color:var(--text);font-weight:600}
+.wstat .err{color:var(--danger)}
+.wordrow{display:flex;align-items:center;gap:12px;padding:8px 2px;border-top:1px solid #F0EEE8;font-size:13px}
+.wordrow:first-of-type{border-top:none}
+.wordrow .w{font-weight:600;min-width:96px}
+.wordrow .p{color:var(--text3);min-width:110px;font-size:12px}
+.wordrow .m{color:var(--text2);flex:1}
+.wordrow .st{flex:none}
+
+/* 上传区 */
+.drop{border:2px dashed #D6D3C8;border-radius:12px;background:#FBFAF6;padding:34px;text-align:center;cursor:pointer}
+.drop:hover{border-color:var(--primary)}
+.drop .dt{font-size:15px;font-weight:600;margin-top:10px}
+.drop .ds{font-size:12px;color:var(--text3);margin-top:4px}
+.conf-low{color:var(--danger);font-weight:600}
+.conf-mid{color:var(--warn)}
+.conf-high{color:var(--text3)}
+
+/* 行内编辑 */
+.edit-input{border:1px solid var(--primary);border-radius:6px;padding:5px 8px;font-size:13px;width:100%;font-family:inherit}
+.opt-btn{font-size:12px;cursor:pointer;padding:4px 8px;border-radius:6px;margin-right:4px}
+.opt-edit{color:var(--primary-strong);background:var(--primary-soft)}
+.opt-del{color:var(--danger);background:var(--danger-soft)}
+
+/* 弹层 */
+.mask{position:fixed;inset:0;background:rgba(28,26,22,.45);display:none;align-items:center;justify-content:center;z-index:50}
+.mask.show{display:flex}
+.modal{width:520px;background:var(--surface);border-radius:14px;padding:22px}
+.modal h3{font-size:16px;margin-bottom:14px}
+.modal .frow{display:flex;align-items:center;gap:12px;margin-bottom:12px}
+.modal .frow label{width:74px;font-size:13px;color:var(--text2);text-align:right;flex:none}
+.modal .frow input{flex:1;border:1px solid var(--border);border-radius:8px;padding:8px 10px;font-size:13px;font-family:inherit}
+.modal .mbtns{display:flex;justify-content:flex-end;gap:10px;margin-top:18px}
+.logline{font-size:12px;color:var(--text2);padding:7px 0;border-bottom:1px dashed #EFEDE6;line-height:1.6}
+.logline b{color:var(--text)}
+
+/* toast */
+.toast{position:fixed;top:26px;left:50%;transform:translateX(-50%);background:rgba(38,38,31,.92);color:#fff;font-size:13px;border-radius:20px;padding:9px 20px;display:none;z-index:60}
+.toast.show{display:block}
+.note{max-width:1280px;margin:6px auto 30px;font-size:12px;color:#8A887F;line-height:1.7;padding:0 8px}
+.kpis{display:flex;gap:14px;margin-bottom:16px}
+.kpi{flex:1;background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:14px 16px}
+.kpi .kl{font-size:12px;color:var(--text2)}
+.kpi .kv{font-size:24px;font-weight:600;margin-top:4px;font-variant-numeric:tabular-nums}
+.kpi .kv small{font-size:12px;color:var(--text3);font-weight:400;margin-left:4px}
+</style>
+</head>
+<body>
+
+<div class="frame">
+  <!-- 侧边导航 -->
+  <aside class="side">
+    <div class="brand">
+      <svg width="30" height="30" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+        <rect width="30" height="30" rx="8" fill="#FFFFFF" opacity="0"/>
+        <path d="M12 22v-9" stroke="#7BC896" stroke-width="2" stroke-linecap="round"/>
+        <path d="M12 13C12 8.5 8.8 6 4.5 6c0 4.5 3.2 7 7.5 7z" fill="#7BC896"/>
+        <path d="M12 11c0-4.5 3.2-7 7.5-7 0 4.5-3.2 7-7.5 7z" fill="#FF8F1F"/>
+      </svg>
+      <div><b>木芽英语</b><span>老师工作台</span></div>
+    </div>
+    <div class="navitem" data-p="p-children" onclick="go(this)"><span class="dot"></span>学员管理</div>
+    <div class="navitem" data-p="p-students" onclick="go(this)"><span class="dot"></span>学员列表</div>
+    <div class="navitem" data-p="p-words" onclick="go(this)"><span class="dot"></span>词条搜索</div>
+    <div class="navitem" data-p="p-upload" onclick="go(this)"><span class="dot"></span>批次上传</div>
+    <div class="foot">木芽英语后台 · v1.0 原型<br>数据均为演示假数据</div>
+  </aside>
+
+  <!-- 主区 -->
+  <div class="main">
+    <div class="topbar">
+      <div>
+        <div class="crumbs" id="crumbs"></div>
+        <div class="pt" id="pt-title">学员管理</div>
+        <div class="sub" id="pt-sub">按天 / 自然周统计每个学员的复习数据</div>
+      </div>
+      <div class="spacer"></div>
+      <div class="avatar">王老师</div>
+    </div>
+
+    <!-- ========== B1 学员列表 ========== -->
+    <section class="page active" id="p-children">
+      <!-- FR-C-02：新增学员 -->
+      <div class="tf">
+        <span class="lab">统计维度</span>
+        <div class="seg" id="seg-dim">
+          <div class="on" data-d="day" onclick="setDim(this)">按天</div>
+          <div data-d="week" onclick="setDim(this)">按自然周</div>
+        </div>
+        <div class="datepick" id="pick" onclick="toast('演示原型：日期选择器（按天=指定日期；按自然周=指定历史周）')">📅 <span id="pick-lab">2026-10-10（今天）</span> ▾</div>
+        <div class="spacer" style="flex:1"></div>
+        <button class="btn btn-p" onclick="toast('演示原型：单个创建 / 批量导入学员（FR-C-01），创建后生成学员编码')">+ 新增学员</button>
+      </div>
+
+      <div class="card">
+        <table id="t-children">
+          <thead>
+            <tr>
+              <th data-k="name" onclick="sortT(this)">姓名 <span class="arr">⇅</span></th>
+              <th data-k="days" onclick="sortT(this)">总复习天数 <span class="arr">⇅</span></th>
+              <th data-k="ratio" onclick="sortT(this)">复习天数占比 <span class="arr">⇅</span></th>
+              <th data-k="acc" onclick="sortT(this)">平均正确率 <span class="arr">⇅</span></th>
+              <th data-k="avg" onclick="sortT(this)">平均用时 <span class="arr">⇅</span></th>
+              <th data-k="total" onclick="sortT(this)">总复习时长 <span class="arr">⇅</span></th>
+              <th data-k="words" onclick="sortT(this)">总复习单词数 <span class="arr">⇅</span></th>
+              <th>操作</th>
+            </tr>
+          </thead>
+          <tbody id="tb-children"></tbody>
+        </table>
+        <div class="hint" style="margin-top:10px">色块阈值：占比 > 80% 绿 / 50~80% 黄 / < 50% 红；正确率 > 85% 绿 / 60~85% 黄 / < 60% 红（PRD 7.5.2）。点击表头排序，点击行进入学员详情页。</div>
+      </div>
+    </section>
+
+    <!-- ========== B2a 学员列表（FR-S-02，2026-10-10 21:10 调整） ========== -->
+    <section class="page" id="p-students">
+      <div class="card">
+        <table>
+          <thead><tr><th style="width:60%">学员姓名</th><th>操作</th></tr></thead>
+          <tbody id="tb-students"></tbody>
+        </table>
+        <div class="hint" style="margin-top:10px">点击「查看」进入该学员的学员详情页（基础信息 + 词条列表 / 学员复习情况 / 易错词三 Tab）。</div>
+      </div>
+    </section>
+
+    <!-- ========== B2b 学员详情页（信息卡 + 三 Tab） ========== -->
+    <section class="page" id="p-detail">
+      <!-- 基础信息卡：姓名 + 账号 -->
+      <div class="card" style="display:flex;align-items:center;gap:16px">
+        <div class="namecell" style="gap:12px">
+          <span class="na" style="width:44px;height:44px;font-size:16px">朵</span>
+          <div>
+            <div style="font-size:17px;font-weight:600">朵朵</div>
+            <div style="font-size:12px;color:var(--text2);margin-top:3px">账号 <span class="mono">MB2026-0128</span></div>
+          </div>
+        </div>
+        <div class="spacer" style="flex:1"></div>
+        <span class="chip blue">4 个批次</span>
+        <button class="btn btn-g" onclick="toast('演示原型：重置学员登录验证码（PRD 8.4）')">重置验证码</button>
+      </div>
+
+      <!-- 三 Tab -->
+      <div class="seg" style="width:420px;margin-bottom:14px">
+        <div class="on" data-t="words" onclick="setDetailTab(this)">词条列表</div>
+        <div data-t="review" onclick="setDetailTab(this)">学员复习情况</div>
+        <div data-t="wrong" onclick="setDetailTab(this)">易错词</div>
+      </div>
+
+      <!-- Tab 1：词条列表 -->
+      <div id="tab-words">
+        <div class="card">
+          <table>
+            <thead><tr>
+              <th>上课日期</th><th>单词数</th><th>是否已人工核验</th><th>总复习次数</th><th>查看单词详情</th>
+            </tr></thead>
+            <tbody id="tb-batches"></tbody>
+          </table>
+          <div class="hint" style="margin-top:10px">点击「查看单词详情」进入该批次<b>词条详情页</b>（单词 / 音标 / 中文意思），支持编辑、删除与「添加单词」；规则沿用 FR-B-05（编辑仅后续复习生效，删除为软删除）。顶部面包屑可逐级返回上一层级。</div>
+        </div>
+      </div>
+
+      <!-- Tab 2：学员复习情况（与学员端复习列表一致，保留原设计） -->
+      <div id="tab-review" style="display:none">
+      <!-- 与学员端一致的按日期分组视图（FR-S-02） -->
+      <div class="dg">
+        <div class="dh">2026-10-10 <span class="wd">周六 · 今天</span></div>
+
+        <div class="wcard">
+          <div class="wt">阶段词汇 Unit 3（第 3 天） <span class="chip ok">已复习</span></div>
+          <div class="wd2">上课日期：2026-10-08 · 12 词</div>
+          <div class="wstat">
+            <span>用时 <b>4 分 12 秒</b></span>
+            <span>正确率 <b style="color:var(--success)">92%</b></span>
+            <span>完成时间 <b>10-10 20:31</b></span>
+            <span class="err">错误单词：elephant、wonderful</span>
+          </div>
+        </div>
+
+        <div class="wcard">
+          <div class="wt">阶段词汇 Unit 4（第 1 天） <span class="chip gray">未复习</span></div>
+          <div class="wd2">上课日期：2026-10-09</div>
+          <div class="wordrow"><span class="w">elephant</span><span class="p">/ˈelɪfənt/</span><span class="m">n. 大象</span><span class="st chip gray">待复习</span></div>
+          <div class="wordrow"><span class="w">wonderful</span><span class="p">/ˈwʌndəfl/</span><span class="m">adj. 精彩的</span><span class="st chip gray">待复习</span></div>
+          <div class="wordrow"><span class="w">diver</span><span class="p">/ˈdaɪvər/</span><span class="m">n. 潜水者</span><span class="st chip gray">待复习</span></div>
+          <div class="hint" style="padding:4px 2px">… 其余 7 词省略</div>
+        </div>
+      </div>
+
+      <div class="dg">
+        <div class="dh">2026-10-09 <span class="wd">周五</span></div>
+        <div class="wcard">
+          <div class="wt">阶段词汇 Unit 2（第 9 天） <span class="chip ok">已复习</span></div>
+          <div class="wd2">上课日期：2026-09-20 · 10 词</div>
+          <div class="wstat">
+            <span>用时 <b>3 分 40 秒</b></span>
+            <span>正确率 <b style="color:var(--success)">100%</b></span>
+            <span>完成时间 <b>10-09 19:02</b></span>
+            <span style="color:var(--success)">本次全部正确</span>
+          </div>
+        </div>
+        <div class="wcard">
+          <div class="wt">阶段词汇 Unit 1（第 14 天） <span class="chip bad">未复习 · 已过期</span></div>
+          <div class="wd2">上课日期：2026-09-11 · 8 词</div>
+          <div class="wstat"><span class="err">到期日 2026-10-09，未复习（不补做，仅作跟进信号）</span></div>
+        </div>
+      </div>
+      </div>
+
+      <!-- Tab 3：易错词（2026-10-10 新增，便于复制带走继续学习） -->
+      <div id="tab-wrong" style="display:none">
+        <div class="card">
+          <div class="tf" style="margin-bottom:12px">
+            <span class="lab">近期复习答错的词（按词条去重 · 默认按最近一次复习时间倒序）</span>
+            <div class="spacer" style="flex:1"></div>
+            <button class="btn btn-g" onclick="copyWrong()">⧉ 复制选中单词</button>
+            <button class="btn btn-danger" onclick="delWrong()">删除选中</button>
+          </div>
+          <table>
+            <thead><tr>
+              <th style="width:36px"><input type="checkbox" id="ck-all" onclick="toggleAllWrong(this)"></th>
+              <th>英文</th><th>中文</th><th>音标</th><th>学习时间</th><th>最近一次复习时间</th>
+            </tr></thead>
+            <tbody id="tb-wrong"></tbody>
+          </table>
+          <div class="hint" style="margin-top:10px">说明：删除仅将词条从「易错词」列表移除，<b>不删除词条本身</b>，不影响历史答题记录与复习计划（PRD 7.5.4 Tab 3）。</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ========== B2c 词条详情页（2026-10-10 调整：页面而非弹窗） ========== -->
+    <section class="page" id="p-worddetail">
+      <div class="tf">
+        <button class="btn btn-g" onclick="openStudent()">← 返回学员详情</button>
+        <span class="lab" id="wd-crumb"></span>
+        <div class="spacer" style="flex:1"></div>
+        <button class="btn btn-p" onclick="openAddWord()">+ 添加单词</button>
+      </div>
+      <div class="card">
+        <h3 id="wd-title2">词条详情</h3>
+        <table>
+          <thead><tr><th style="width:18%">单词</th><th style="width:24%">音标</th><th>中文意思</th><th style="width:150px">操作</th></tr></thead>
+          <tbody id="wd-body"></tbody>
+        </table>
+        <div class="hint" style="margin-top:10px">编辑 / 删除规则沿用 FR-B-05：编辑仅后续复习次生效、历史答题记录不回溯；删除为软删除。点「+ 添加单词」通过弹窗录入单词基础信息。</div>
+      </div>
+    </section>
+
+    <!-- ========== B3 词条搜索编辑 ========== -->
+    <section class="page" id="p-words">
+      <div class="card">
+        <div class="tf" style="margin-bottom:12px">
+          <input id="q-w" placeholder="单词 / 释义" style="border:1px solid var(--border);border-radius:8px;padding:8px 12px;font-size:13px;width:200px;font-family:inherit">
+          <select id="q-c" style="border:1px solid var(--border);border-radius:8px;padding:8px 10px;font-size:13px;font-family:inherit;color:var(--text2)">
+            <option value="">全部学员</option><option>朵朵</option><option>乐乐</option><option>糖糖</option><option>小树</option>
+          </select>
+          <select id="q-b" style="border:1px solid var(--border);border-radius:8px;padding:8px 10px;font-size:13px;font-family:inherit;color:var(--text2)">
+            <option value="">全部批次</option><option>Unit 1</option><option>Unit 2</option><option>Unit 3</option><option>Unit 4</option>
+          </select>
+          <button class="btn btn-p" onclick="searchWords()">搜索</button>
+          <div class="spacer" style="flex:1"></div>
+          <button class="btn btn-g" onclick="toast('演示原型：勾选多条后批量替换某字段（需二次确认）')">批量编辑</button>
+        </div>
+        <table>
+          <thead><tr>
+            <th style="width:36px"><input type="checkbox" onclick="toast('演示原型：全选')"></th>
+            <th>学员</th><th>批次</th><th>上课日期</th><th>单词</th><th>音标</th><th>释义</th><th>识别置信度</th><th>状态</th><th>操作</th>
+          </tr></thead>
+          <tbody id="tb-words"></tbody>
+        </table>
+        <div class="hint" style="margin-top:10px">规则（PRD FR-B-05）：行内直接编辑 4 字段；软删除剔除后续复习但保留历史答题；编辑后仅后续复习次生效，历史答题记录不回溯。</div>
+      </div>
+
+      <div class="card">
+        <h3>操作日志（word_audit_log）</h3>
+        <div class="logline"><b>王老师</b> · 2026-10-10 18:02 · 修改释义：elephant 「n. 大像」→「n. 大象」（朵朵 / Unit 4）</div>
+        <div class="logline"><b>王老师</b> · 2026-10-10 17:46 · 批量编辑：Unit 3 共 3 条音标补全（识别置信度 < 90% 的词条）</div>
+        <div class="logline"><b>王老师</b> · 2026-10-10 16:31 · 软删除：appale（识别错误词条，朵朵 / Unit 3，历史记录保留）</div>
+      </div>
+    </section>
+
+    <!-- ========== B4 批次上传校对 ========== -->
+    <section class="page" id="p-upload">
+      <div class="tf">
+        <span class="lab">上传对象</span>
+        <select style="border:1px solid var(--border);border-radius:8px;padding:8px 10px;font-size:13px;font-family:inherit;color:var(--text2)">
+          <option>朵朵</option><option>乐乐</option><option>糖糖</option><option>小树</option>
+        </select>
+        <span class="lab">上课日期</span>
+        <div class="datepick">📅 <span>2026-10-09</span></div>
+        <div class="spacer" style="flex:1"></div>
+        <button class="btn btn-g" onclick="toast('演示原型：查看待校对批次列表')">待校对批次（1）</button>
+      </div>
+
+      <div class="card">
+        <div class="drop" onclick="toast('演示原型：选择讲义图片上传（jpg/png，多张）')">
+          <svg width="40" height="40" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+            <rect x="3" y="5" width="18" height="14" rx="2" stroke="#B9B6A8" stroke-width="1.6"/>
+            <path d="M3 15.5l4.5-4 4 3.5 3-2.5 6.5 5.5" stroke="#B9B6A8" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+            <circle cx="15.5" cy="9.5" r="1.6" fill="#B9B6A8"/>
+          </svg>
+          <div class="dt">点击上传讲义图片</div>
+          <div class="ds">支持 jpg / png，可多张 · 上传后自动识别单词、音标、释义（FR-B-01）</div>
+        </div>
+      </div>
+
+      <!-- 校对区（FR-B-02，2026-10-10 调整：编辑/删除/手动添加） -->
+      <div class="card">
+        <h3>识别结果 · 人工校对 <span class="chip warn" style="margin-left:6px">2 个低置信词条</span>
+          <button class="btn btn-g" style="margin-left:12px" onclick="openAddWord()">+ 手动添加单词</button>
+        </h3>
+        <table>
+          <thead><tr><th>单词</th><th>音标</th><th>释义</th><th>发音</th><th>置信度</th><th>校对状态</th><th>操作</th></tr></thead>
+          <tbody>
+            <tr>
+              <td><b>elephant</b></td><td>/ˈelɪfənt/</td><td>n. 大象</td><td><button class="btn btn-s" onclick="speakW('elephant')">▶ 播放</button></td>
+              <td><span class="chip ok">98%</span></td><td class="st-cell"><span class="chip ok">已校对</span></td>
+              <td><span class="opt-btn opt-edit" onclick="editUploadRow(this)">编辑</span><span class="opt-btn opt-del" onclick="delUploadRow(this)">删除</span></td>
+            </tr>
+            <tr>
+              <td><b>wonderful</b></td><td>/ˈwʌndəfl/</td><td>adj. 精彩的，绝妙的</td><td><button class="btn btn-s" onclick="speakW('wonderful')">▶ 播放</button></td>
+              <td><span class="chip ok">96%</span></td><td class="st-cell"><span class="chip ok">已校对</span></td>
+              <td><span class="opt-btn opt-edit" onclick="editUploadRow(this)">编辑</span><span class="opt-btn opt-del" onclick="delUploadRow(this)">删除</span></td>
+            </tr>
+            <tr style="background:var(--danger-soft)">
+              <td><b style="color:var(--danger)">appale</b></td><td>/ˈæpl/</td><td>n. 苹果</td><td><button class="btn btn-s" onclick="speakW('apple')">▶ 播放</button></td>
+              <td><span class="chip bad">72%</span></td><td class="st-cell"><span class="chip warn">待校对</span></td>
+              <td><span class="opt-btn opt-edit" onclick="fixWord(this,'apple')">改为 apple</span><span class="opt-btn opt-edit" onclick="editUploadRow(this)">编辑</span><span class="opt-btn opt-del" onclick="delUploadRow(this)">删除</span></td>
+            </tr>
+            <tr style="background:var(--danger-soft)">
+              <td><b style="color:var(--danger)">brav</b></td><td>/breɪv/</td><td>adj. 勇敢的</td><td><button class="btn btn-s" onclick="speakW('brave')">▶ 播放</button></td>
+              <td><span class="chip bad">81%</span></td><td class="st-cell"><span class="chip warn">待校对</span></td>
+              <td><span class="opt-btn opt-edit" onclick="fixWord(this,'brave')">改为 brave</span><span class="opt-btn opt-edit" onclick="editUploadRow(this)">编辑</span><span class="opt-btn opt-del" onclick="delUploadRow(this)">删除</span></td>
+            </tr>
+          </tbody>
+        </table>
+        <div style="display:flex;gap:10px;margin-top:14px;align-items:center">
+          <button class="btn btn-p" onclick="confirmUpload()">✓ 校对完成，确认入库</button>
+          <button class="btn btn-g" onclick="toast('演示原型：重新上传图片')">重新上传</button>
+          <span class="hint">确认入库后自动生成 21 天 10 次复习计划（第 1·2·3·5·7·9·12·14·17·21 天，FR-P-01）</span>
+        </div>
+      </div>
+    </section>
+  </div>
+</div>
+
+<p class="note">木芽英语老师后台高保真原型 · 登录（teacher / 123456）/ B1 学员管理（按天/自然周统计 + 排序 + 色块阈值）/ B2 学员列表 → 学员详情（三 Tab：词条列表 / 学员复习情况 / 易错词，支持批量勾选 · 复制 · 删除）→ 词条详情页（页面级 + 面包屑逐级返回 + 添加单词弹窗）/ B3 词条搜索编辑 / B4 批次上传校对（编辑 / 删除 / 手动添加，手动编辑后状态改已校对） · 全部功能对应 PRD v1.0（含 2026-10-10 21:25 调整） · 数据均为演示假数据</p>
+
+<div class="mask" id="mask">
+  <div class="modal" role="dialog" aria-label="编辑词条">
+    <h3>编辑词条</h3>
+    <div class="frow"><label>单词</label><input id="e-w"></div>
+    <div class="frow"><label>音标</label><input id="e-p"></div>
+    <div class="frow"><label>释义</label><input id="e-m"></div>
+    <div class="hint" style="margin-left:86px">保存后仅后续复习次生效，历史答题记录不回溯（PRD FR-B-05）。</div>
+    <div class="mbtns">
+      <button class="btn btn-g" onclick="closeModal()">取消</button>
+      <button class="btn btn-p" onclick="saveWord()">保存</button>
+    </div>
+  </div>
+</div>
+<style>
+/* 面包屑（2026-10-10 层级返回交互） */
+.crumbs{font-size:12px;color:var(--text3);margin-bottom:4px;min-height:16px}
+.crumbs .cl{color:var(--primary-strong,#C96A00);cursor:pointer}
+.crumbs .cl:hover{text-decoration:underline}
+.crumbs b{color:var(--text2,#666)}
+</style>
+<div class="mask" id="amask">
+  <div class="modal" role="dialog" aria-label="添加单词">
+    <h3>添加单词</h3>
+    <div class="frow"><label>单词</label><input id="a-w" placeholder="如：elephant"></div>
+    <div class="frow"><label>音标</label><input id="a-p" placeholder="如：/ˈelɪfənt/"></div>
+    <div class="frow"><label>释义</label><input id="a-m" placeholder="如：n. 大象"></div>
+    <div class="hint" style="margin-left:86px">添加后进入该批次词库，规则沿用 FR-B-05（仅后续复习次生效）。</div>
+    <div class="mbtns">
+      <button class="btn btn-g" onclick="closeAdd()">取消</button>
+      <button class="btn btn-p" onclick="saveAdd()">添加</button>
+    </div>
+  </div>
+</div>
+
+<!-- 登录页（2026-10-10 新增：FR-C-04） -->
+<div class="mask show" id="login" style="background:linear-gradient(160deg,#FFF9F2,#F4EFE6)">
+  <div class="modal" role="dialog" aria-label="老师登录" style="width:380px;padding:34px 30px;box-shadow:none;background:#fff;border:1px solid var(--border)">
+    <div style="display:flex;align-items:center;gap:10px;justify-content:center;margin-bottom:6px">
+      <svg width="34" height="34" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+        <path d="M12 22v-9" stroke="#7BC896" stroke-width="2" stroke-linecap="round"/>
+        <path d="M12 13C12 8.5 8.8 6 4.5 6c0 4.5 3.2 7 7.5 7z" fill="#7BC896"/>
+        <path d="M12 11c0-4.5 3.2-7 7.5-7 0 4.5-3.2 7-7.5 7z" fill="#FF8F1F"/>
+      </svg>
+      <b style="font-size:19px">木芽英语</b>
+    </div>
+    <div style="text-align:center;font-size:12px;color:var(--text2);margin-bottom:20px">老师工作台 · 登录</div>
+    <div class="frow"><label>账号</label><input id="l-u" value="teacher"></div>
+    <div class="frow"><label>密码</label><input id="l-p" type="password" value="123456"></div>
+    <div class="hint" style="margin-left:86px">演示默认账号：teacher / 123456（连续 5 次失败锁定 15 分钟）。</div>
+    <div class="mbtns">
+      <button class="btn btn-p" style="width:100%" onclick="doLogin()">登 录</button>
+    </div>
+  </div>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+/* ---------- 导航 ---------- */
+const TITLES = {
+  'p-children': ['学员管理', '按天 / 自然周统计每个学员的复习数据（FR-S-01）'],
+  'p-students': ['学员列表', '学员姓名 + 操作，点「查看」进入学员详情页（FR-S-02）'],
+  'p-words':    ['词条搜索', '搜索、行内编辑、批量编辑、软删除（FR-B-05）'],
+  'p-upload':   ['批次上传', '图片上传 → 识别 → 人工校对 → 确认入库（FR-B-01/02）']
+};
+function go(el){
+  document.querySelectorAll('.navitem').forEach(n => n.classList.remove('on'));
+  el.classList.add('on');
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.getElementById(el.dataset.p).classList.add('active');
+  const t = TITLES[el.dataset.p];
+  document.getElementById('pt-title').textContent = t[0];
+  document.getElementById('pt-sub').textContent = t[1];
+  document.getElementById('crumbs').innerHTML = '';
+}
+function goById(id){
+  const n = document.querySelector('.navitem[data-p=' + id + ']');
+  if (n) go(n);
+}
+function setCrumbs(html){ document.getElementById('crumbs').innerHTML = html; }
+function activate(id){ document.querySelectorAll('.page').forEach(p => p.classList.remove('active')); document.getElementById(id).classList.add('active'); }
+
+/* ---------- toast ---------- */
+let toastTimer;
+function toast(msg){
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.classList.remove('show'), 2600);
+}
+
+/* ---------- B1 学员列表（按天 / 按自然周两套数据） ---------- */
+const CHILDREN = {
+  day: [
+    {name:'朵朵', days:1, ratio:100, acc:92, avg:'5.2s', total:'4m12s', words:12},
+    {name:'乐乐', days:1, ratio:100, acc:85, avg:'7.8s', total:'6m03s', words:14},
+    {name:'糖糖', days:0, ratio:0,   acc:0,  avg:'—',    total:'0s',    words:0},
+    {name:'小树', days:1, ratio:100, acc:64, avg:'11.4s',total:'9m40s', words:10}
+  ],
+  week: [
+    {name:'朵朵', days:5, ratio:71,  acc:91, avg:'5.6s', total:'22m08s', words:58},
+    {name:'乐乐', days:6, ratio:86,  acc:84, avg:'7.2s', total:'41m55s', words:66},
+    {name:'糖糖', days:2, ratio:29,  acc:73, avg:'9.1s', total:'15m37s', words:22},
+    {name:'小树', days:3, ratio:43,  acc:62, avg:'12.3s',total:'58m20s', words:31}
+  ]
+};
+let curDim = 'day', curSort = {k:null, asc:true};
+function setDim(el){
+  document.querySelectorAll('#seg-dim div').forEach(d => d.classList.remove('on'));
+  el.classList.add('on');
+  curDim = el.dataset.d;
+  document.getElementById('pick-lab').textContent = curDim === 'day' ? '2026-10-10（今天）' : '本周（10-05 ~ 10-11）';
+  renderChildren();
+}
+function accChip(v){
+  if (v === 0) return '<span class="chip gray">—</span>';
+  return v > 85 ? '<span class="chip ok">' + v + '%</span>' : v >= 60 ? '<span class="chip warn">' + v + '%</span>' : '<span class="chip bad">' + v + '%</span>';
+}
+function ratioChip(v){
+  if (v === 0) return '<span class="chip bad">0%</span>';
+  return v > 80 ? '<span class="chip ok">' + v + '%</span>' : v >= 50 ? '<span class="chip warn">' + v + '%</span>' : '<span class="chip bad">' + v + '%</span>';
+}
+function renderChildren(){
+  const denom = curDim === 'day' ? 1 : 7;
+  const rows = CHILDREN[curDim].slice().sort((a, b) => {
+    if (!curSort.k) return 0;
+    const va = a[curSort.k], vb = b[curSort.k];
+    if (typeof va === 'string') return curSort.asc ? va.localeCompare(vb) : vb.localeCompare(va);
+    return curSort.asc ? va - vb : vb - va;
+  });
+  document.getElementById('tb-children').innerHTML = rows.map(c =>
+    '<tr class="clickable" onclick="go(document.querySelector(\'.navitem[data-p=p-detail]\'))">' +
+    '<td><div class="namecell"><span class="na">' + c.name[0] + '</span>' + c.name + '</div></td>' +
+    '<td class="mono">' + c.days + ' 天</td>' +
+    '<td>' + ratioChip(Math.round(c.ratio)) + '</td>' +
+    '<td>' + accChip(c.acc) + '</td>' +
+    '<td class="mono">' + c.avg + '/词</td>' +
+    '<td class="mono">' + c.total + '</td>' +
+    '<td class="mono">' + c.words + '</td>' +
+    '<td><span class="opt-btn opt-edit" onclick="openStudent()">详情</span></td></tr>').join('');
+}
+function sortT(th){
+  const k = th.dataset.k;
+  curSort = {k, asc: curSort.k === k ? !curSort.asc : true};
+  document.querySelectorAll('#t-children th .arr').forEach(a => a.textContent = '⇅');
+  th.querySelector('.arr').textContent = curSort.asc ? '↑' : '↓';
+  renderChildren();
+}
+renderChildren();
+
+/* ---------- B3 词条搜索编辑 ---------- */
+const WORDROWS = [
+  {c:'朵朵', b:'Unit 4', d:'2026-10-09', w:'elephant',  p:'/ˈelɪfənt/', m:'n. 大象',            conf:98, st:'已入库'},
+  {c:'朵朵', b:'Unit 4', d:'2026-10-09', w:'wonderful', p:'/ˈwʌndəfl/', m:'adj. 精彩的，绝妙的', conf:96, st:'已入库'},
+  {c:'朵朵', b:'Unit 4', d:'2026-10-09', w:'diver',     p:'/ˈdaɪvər/',  m:'n. 潜水者',           conf:94, st:'已入库'},
+  {c:'朵朵', b:'Unit 3', d:'2026-10-08', w:'appale',    p:'/ˈæpl/',     m:'n. 苹果',             conf:72, st:'低置信'},
+  {c:'朵朵', b:'Unit 3', d:'2026-10-08', w:'well',      p:'/wel/',      m:'adv. 很好地',         conf:99, st:'已入库'},
+  {c:'乐乐', b:'Unit 2', d:'2026-09-20', w:'brave',     p:'/breɪv/',    m:'adj. 勇敢的',         conf:97, st:'已入库'}
+];
+function confChip(v){
+  return v >= 90 ? '<span class="conf-high">' + v + '%</span>' : v >= 80 ? '<span class="conf-mid">' + v + '%</span>' : '<span class="conf-low">' + v + '%</span>';
+}
+function searchWords(){
+  const kw = document.getElementById('q-w').value.trim().toLowerCase();
+  const c = document.getElementById('q-c').value;
+  const b = document.getElementById('q-b').value;
+  const rows = WORDROWS.filter(r =>
+    (!kw || r.w.includes(kw) || r.m.includes(kw)) && (!c || r.c === c) && (!b || r.b === b.replace('Unit ', 'Unit ')));
+  document.getElementById('tb-words').innerHTML = rows.length ? rows.map(r =>
+    '<tr>' +
+    '<td><input type="checkbox"></td>' +
+    '<td>' + r.c + '</td><td>' + r.b + '</td><td class="mono">' + r.d + '</td>' +
+    '<td><b>' + r.w + '</b></td><td>' + r.p + '</td><td>' + r.m + '</td>' +
+    '<td>' + confChip(r.conf) + '</td>' +
+    '<td>' + (r.st === '低置信' ? '<span class="chip warn">低置信</span>' : '<span class="chip ok">已入库</span>') + '</td>' +
+    '<td><span class="opt-btn opt-edit" onclick="openModal(\'' + r.w + '\',\'' + r.p + '\',\'' + r.m + '\')">编辑</span>' +
+    '<span class="opt-btn opt-del" onclick="toast(\'演示原型：软删除——从后续复习剔除，历史答题记录保留\')">删除</span></td></tr>').join('')
+    : '<tr><td colspan="10" style="text-align:center;color:var(--text3);padding:30px">没有匹配的词条</td></tr>';
+}
+searchWords();
+let editingRow = null, uploadEditingRow = null;
+function openModal(w, p, m){
+  editingRow = w;
+  document.getElementById('e-w').value = w;
+  document.getElementById('e-p').value = p;
+  document.getElementById('e-m').value = m;
+  document.getElementById('mask').classList.add('show');
+}
+function closeModal(){ document.getElementById('mask').classList.remove('show'); }
+function saveWord(){
+  closeModal();
+  if (uploadEditingRow) {
+    const tr = uploadEditingRow; uploadEditingRow = null;
+    markVerified(tr);
+    toast('已保存「' + document.getElementById('e-w').value + '」，校对状态：已校对（仅后续复习次生效）');
+  } else {
+    toast('已保存「' + document.getElementById('e-w').value + '」：仅后续复习次生效，历史记录不回溯');
+  }
+}
+/* 批次上传页：行编辑（2026-10-10 调整：手动编辑后校对状态改为已校对） */
+function markVerified(tr){
+  tr.style.background = '';
+  const st = tr.querySelector('.st-cell');
+  if (st) st.innerHTML = '<span class="chip ok">已校对</span>';
+}
+function editUploadRow(el){
+  const tr = el.closest('tr');
+  uploadEditingRow = tr;
+  openModal(tr.cells[0].textContent, tr.cells[1].textContent, tr.cells[2].textContent);
+}
+function delUploadRow(el){
+  const tr = el.closest('tr');
+  tr.style.background = '';
+  tr.style.opacity = '.45';
+  toast('已删除该词条：从本批次词库剔除（演示原型）');
+}
+function fixWord(el, w){
+  const tr = el.closest('tr');
+  tr.cells[0].innerHTML = '<b>' + w + '</b>';
+  markVerified(tr);
+  toast('已改为 ' + w + '，置信度刷新为 99%，校对状态：已校对');
+}
+function speakW(w){
+  try {
+    const u = new SpeechSynthesisUtterance(w);
+    u.lang = 'en-US'; u.rate = .85;
+    speechSynthesis.cancel(); speechSynthesis.speak(u);
+  } catch(e) { toast('当前环境不支持发音'); }
+}
+function confirmUpload(){
+  const lows = document.querySelectorAll('tr[style*="danger-soft"]').length;
+  if (lows > 0) { toast('仍有 ' + lows + ' 个低置信词条未处理，请先校对'); return; }
+  toast('已入库：生成 21 天 10 次复习计划（第 1·2·3·5·7·9·12·14·17·21 天）');
+}
+
+/* ---------- B2a 学员列表 ---------- */
+const STUDENTS = ['朵朵', '乐乐', '糖糖', '小树'];
+document.getElementById('tb-students').innerHTML = STUDENTS.map(n =>
+  '<tr><td><div class="namecell"><span class="na">' + n[0] + '</span>' + n + '</div></td>' +
+  '<td><span class="opt-btn opt-edit" onclick="openStudent()">查看</span></td></tr>').join('');
+
+/* ---------- B2b 学员详情页：三 Tab ---------- */
+function openStudent(){
+  activate('p-detail');
+  document.getElementById('pt-title').textContent = '学员详情';
+  document.getElementById('pt-sub').textContent = '基础信息 + 词条列表 / 词条列表 / 学员复习情况 / 易错词三 Tab（FR-S-02，2026-10-10 调整）';
+  setCrumbs('<span class="cl" onclick="goById(\'p-students\')">学员列表</span> › <b>学员详情</b>');
+  document.querySelectorAll('.navitem').forEach(n => n.classList.remove('on'));
+  const sn = document.querySelector('.navitem[data-p=p-students]'); if (sn) sn.classList.add('on');
+}
+function setDetailTab(el){
+  el.parentElement.querySelectorAll('div').forEach(d => d.classList.remove('on'));
+  el.classList.add('on');
+  ['words', 'review', 'wrong'].forEach(t => {
+    document.getElementById('tab-' + t).style.display = el.dataset.t === t ? '' : 'none';
+  });
+}
+/* ---------- 学员详情 · Tab3 易错词（2026-10-10 新增） ---------- */
+let WRONG = [
+  {w:'elephant',  m:'n. 大象',        p:'/ˈelɪfənt/',  learn:'2026-10-09', last:'2026-10-10 20:31'},
+  {w:'wonderful', m:'adj. 精彩的',    p:'/ˈwʌndəfl/', learn:'2026-10-09', last:'2026-10-10 20:30'},
+  {w:'madam',     m:'n. 女士',        p:'/ˈmædəm/',   learn:'2026-10-08', last:'2026-10-09 19:04'},
+  {w:'evening',   m:'n. 晚上',        p:'/ˈiːvnɪŋ/',  learn:'2026-10-08', last:'2026-10-09 19:02'},
+  {w:'top',       m:'n. 顶端',        p:'/tɒp/',      learn:'2026-09-20', last:'2026-09-28 20:11'},
+  {w:'brave',     m:'adj. 勇敢的',    p:'/breɪv/',    learn:'2026-09-20', last:'2026-09-24 19:40'},
+  {w:'point',     m:'v. 指向；n. 点', p:'/pɔɪnt/',    learn:'2026-09-11', last:'2026-09-18 18:52'}
+];
+function renderWrong(){
+  document.getElementById('tb-wrong').innerHTML = WRONG.length ? WRONG.map((r, i) =>
+    '<tr><td><input type="checkbox" class="ck-w" data-i="' + i + '"></td>' +
+    '<td><b>' + r.w + '</b></td><td>' + r.m + '</td><td>' + r.p + '</td>' +
+    '<td class="mono">' + r.learn + '</td><td class="mono">' + r.last + '</td></tr>').join('')
+    : '<tr><td colspan="6" style="text-align:center;color:var(--text3);padding:30px">近期没有答错的词，很棒 👍</td></tr>';
+  const all = document.getElementById('ck-all'); if (all) all.checked = false;
+}
+function toggleAllWrong(ck){
+  document.querySelectorAll('.ck-w').forEach(c => { c.checked = ck.checked; });
+}
+function pickedWrong(){
+  const cks = [...document.querySelectorAll('.ck-w')].filter(c => c.checked);
+  if (!cks.length) { toast('请先勾选词条'); return null; }
+  return cks;
+}
+function copyWrong(){
+  const cks = pickedWrong(); if (!cks) return;
+  const txt = cks.map(c => { const r = WRONG[+c.dataset.i]; return r.w + '  ' + r.p; }).join('\n');
+  const ok = () => toast('已复制 ' + cks.length + ' 个单词（英文 + 音标），可直接粘贴给孩子');
+  try {
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(txt).then(ok, ok);
+    } else { const ta = document.createElement('textarea'); ta.value = txt; document.body.appendChild(ta); ta.select(); document.execCommand('copy'); ta.remove(); ok(); }
+  } catch(e) { ok(); }
+}
+function delWrong(){
+  const cks = pickedWrong(); if (!cks) return;
+  const idxs = cks.map(c => +c.dataset.i).sort((a, b) => b - a);
+  if (!confirm('确认把选中的 ' + idxs.length + ' 个词从「易错词」列表移除？\n仅移除列表条目，不删除词条本身，不影响历史答题记录与复习计划。')) return;
+  idxs.forEach(i => WRONG.splice(i, 1));
+  renderWrong();
+  toast('已从易错词列表移除 ' + idxs.length + ' 个单词');
+}
+renderWrong();
+
+/* ---------- 学员详情 · Tab1 词条列表（批次行） ---------- */
+const BATCHES = [
+  {d:'2026-10-09', n:10, verified:true,  reviews:0,  words:[
+    {w:'elephant', p:'/ˈelɪfənt/', m:'n. 大象'},
+    {w:'wonderful', p:'/ˈwʌndəfl/', m:'adj. 精彩的，绝妙的'},
+    {w:'diver', p:'/ˈdaɪvər/', m:'n. 潜水者'}]},
+  {d:'2026-10-08', n:12, verified:true,  reviews:3,  words:[
+    {w:'well', p:'/wel/', m:'adv. 很好地'},
+    {w:'madam', p:'/ˈmædəm/', m:'n. 女士'},
+    {w:'evening', p:'/ˈiːvnɪŋ/', m:'n. 晚上'}]},
+  {d:'2026-09-20', n:10, verified:true,  reviews:6,  words:[
+    {w:'brave', p:'/breɪv/', m:'adj. 勇敢的'},
+    {w:'type', p:'/taɪp/', m:'n. 类型；v. 打字'},
+    {w:'top', p:'/tɒp/', m:'n. 顶端'}]},
+  {d:'2026-09-11', n:8,  verified:false, reviews:8,  words:[
+    {w:'point', p:'/pɔɪnt/', m:'v. 指向；n. 点'},
+    {w:'apple', p:'/ˈæpl/', m:'n. 苹果'}]}
+];
+document.getElementById('tb-batches').innerHTML = BATCHES.map((b, i) =>
+  '<tr><td class="mono">' + b.d + '</td>' +
+  '<td class="mono">' + b.n + ' 词</td>' +
+  '<td>' + (b.verified ? '<span class="chip ok">已人工核验</span>' : '<span class="chip warn">待校对</span>') + '</td>' +
+  '<td class="mono">' + b.reviews + ' / 10 次</td>' +
+  '<td><span class="opt-btn opt-edit" onclick="openWordDetail(' + i + ')">查看单词详情</span></td></tr>').join('');
+
+/* ---------- 单词详情页（2026-10-10 调整：页面而非弹窗） ---------- */
+function openWordDetail(i){
+  const b = BATCHES[i];
+  activate('p-worddetail');
+  document.getElementById('pt-title').textContent = '词条详情';
+  document.getElementById('pt-sub').textContent = '该批次上传的单词信息（单词 / 音标 / 中文意思），支持编辑、删除、添加';
+  setCrumbs('<span class="cl" onclick="goById(\'p-students\')">学员列表</span> › <span class="cl" onclick="openStudent()">学员详情</span> › 词条列表 › <b>词条详情</b>');
+  document.getElementById('wd-crumb').textContent = '上课日期 ' + b.d + ' · 批次词条 ' + b.words.length + ' 词';
+  document.getElementById('wd-title2').textContent = '词条详情 · 上课日期 ' + b.d;
+  document.getElementById('wd-body').innerHTML = b.words.map(r =>
+    '<tr><td><b>' + r.w + '</b></td><td>' + r.p + '</td><td>' + r.m + '</td>' +
+    '<td><span class="opt-btn opt-edit" onclick="openModal(\'' + r.w + '\',\'' + r.p + '\',\'' + r.m + '\')">编辑</span>' +
+    '<span class="opt-btn opt-del" onclick="toast(\'演示原型：软删除——从后续复习剔除，历史答题记录保留\')">删除</span></td></tr>').join('') +
+    (b.n > b.words.length ? '<tr><td colspan="4" class="hint" style="text-align:center;padding:10px">… 其余 ' + (b.n - b.words.length) + ' 词省略</td></tr>' : '');
+}
+/* ---------- 添加单词（弹窗） ---------- */
+function openAddWord(){ document.getElementById('amask').classList.add('show'); }
+function closeAdd(){ document.getElementById('amask').classList.remove('show'); }
+function saveAdd(){
+  const w = document.getElementById('a-w').value.trim();
+  if (!w) { toast('请输入单词'); return; }
+  closeAdd();
+  toast('已添加「' + w + '」：进入该批次词库，仅后续复习次生效（FR-B-05）');
+}
+/* ---------- 登录（FR-C-04） ---------- */
+let failCount = 0;
+function doLogin(){
+  const u = document.getElementById('l-u').value.trim();
+  const p = document.getElementById('l-p').value;
+  if (u === 'teacher' && p === '123456') {
+    document.getElementById('login').classList.remove('show');
+    toast('登录成功，欢迎回来，王老师');
+  } else {
+    failCount++;
+    toast('账号或密码错误（默认 teacher / 123456），再错 ' + (5 - failCount) + ' 次将锁定 15 分钟');
+    if (failCount >= 5) toast('失败次数过多，已锁定 15 分钟（演示原型：刷新页面重置）');
+  }
+}
+</script>
+</body>
+</html>

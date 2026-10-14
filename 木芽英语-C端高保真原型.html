@@ -1,0 +1,675 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>木芽英语 · C端高保真原型（375px）</title>
+<style>
+:root{
+  --bg:#F7F6F3; --surface:#FFFFFF;
+  --primary:#FF8F1F; --primary-strong:#E67E00; --primary-soft:#FFF3E6;
+  --brand-green:#3FA66A;
+  --success:#22A45D; --success-soft:#EAF6EF;
+  --danger:#E5484D; --danger-soft:#FCEDEE;
+  --text:#26261F; --text2:#6B6B60; --text3:#9C9C90;
+  --border:#ECEAE4;
+}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{font-family:-apple-system,"PingFang SC","Noto Sans SC","Helvetica Neue",sans-serif;background:#ECEAE6;color:var(--text);letter-spacing:0}
+.phone{width:375px;min-height:760px;margin:24px auto;background:var(--bg);border-radius:24px;overflow:hidden;box-shadow:0 8px 32px rgba(38,38,31,.12);position:relative}
+.screen{display:none;min-height:760px;padding-bottom:76px}
+.screen.active{display:block}
+
+/* ===== 品牌栏 ===== */
+.brandbar{display:flex;align-items:center;gap:10px;padding:18px 16px 12px;background:var(--surface)}
+.logo{width:36px;height:36px;border-radius:10px;background:#EAF4EE;display:flex;align-items:center;justify-content:center;flex:none}
+.brandname{font-size:17px;font-weight:600}
+.brandsub{font-size:11px;color:var(--text3);margin-top:1px}
+
+/* ===== Tab ===== */
+.tabs{display:flex;background:var(--surface);border-bottom:1px solid var(--border);margin-top:12px}
+.tabs .t{flex:1;text-align:center;padding:12px 0 10px;font-size:15px;color:var(--text2);border-bottom:3px solid transparent;cursor:pointer}
+.tabs .t.on{color:var(--primary-strong);font-weight:600;border-bottom-color:var(--primary)}
+
+/* ===== 日期分组 ===== */
+.daygroup{padding:16px 16px 0}
+.daytitle{font-size:16px;font-weight:600;margin-bottom:8px;display:flex;align-items:baseline;gap:8px}
+.daytitle .wd{font-size:12px;color:var(--text3);font-weight:400}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:14px;margin-bottom:14px}
+.card .ct{font-size:16px;font-weight:600}
+.card .cd{font-size:12px;color:var(--text3);margin:3px 0 10px}
+.chead{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.chead .cd{margin-bottom:0}
+.btn-sm{flex:none;background:var(--primary);color:#fff;border:none;border-radius:18px;min-height:38px;padding:0 18px;font-size:14px;font-weight:600;cursor:pointer}
+.btn-sm:active{background:var(--primary-strong);transform:scale(.96)}
+.btn-sm[disabled]{background:var(--surface);color:var(--success);border:1.5px solid var(--success)}
+.statrow{display:flex;text-align:center;background:var(--bg);border-radius:10px;padding:10px 6px}
+.statrow>div{flex:1}
+.statrow .v{font-size:17px;font-weight:600;font-variant-numeric:tabular-nums}
+.statrow .l{font-size:11px;color:var(--text2);margin-top:2px}
+.wrongwrap{margin-top:10px;border-top:1px solid var(--border);padding-top:8px}
+.wrongtoggle{display:flex;align-items:center;gap:6px;font-size:13px;color:var(--danger);cursor:pointer;padding:4px 0;min-height:32px}
+.wrongtoggle .arr{transition:transform .2s;display:inline-block}
+.wrongtoggle.open .arr{transform:rotate(180deg)}
+.wronglist{display:none;margin-top:2px}
+.wronglist.show{display:block}
+.wronglist .wi{display:flex;gap:10px;font-size:13px;color:var(--text2);padding:5px 0}
+.wronglist .wi b{color:var(--text);font-weight:500;min-width:86px}
+.allright{display:flex;align-items:center;gap:6px;font-size:13px;color:var(--success);padding:4px 0}
+.btn-main{display:block;width:100%;background:var(--primary);color:#fff;border:none;border-radius:24px;padding:14px 0;font-size:16px;font-weight:600;cursor:pointer;margin-top:4px}
+
+/* ===== 我的页 ===== */
+.mepage{padding:16px}
+.mecard{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:18px 16px;display:flex;align-items:center;gap:14px}
+.meavatar{width:56px;height:56px;border-radius:50%;background:#EAF4EE;display:flex;align-items:center;justify-content:center;flex:none}
+.mename{font-size:19px;font-weight:600}
+.mecode{display:inline-flex;align-items:center;gap:6px;margin-top:6px;font-size:12px;color:var(--text2);background:var(--bg);border:1px solid var(--border);border-radius:14px;padding:3px 10px;font-variant-numeric:tabular-nums}
+.meslogan{display:flex;align-items:center;gap:8px;margin-top:14px;background:var(--primary-soft);border:1px solid #FFE3C2;border-radius:12px;padding:11px 13px;font-size:13px;color:var(--primary-strong);line-height:1.5}
+.mperiod{background:var(--surface);border:1px solid var(--border);border-radius:14px;margin-top:12px;padding:13px 14px}
+.mperiod .ph{font-size:13px;font-weight:600;color:var(--text2);margin-bottom:9px;display:flex;align-items:center;gap:6px}
+.mperiod .ph .pd{width:7px;height:7px;border-radius:50%;background:var(--primary);flex:none}
+.mestats{display:flex;text-align:center;background:var(--bg);border-radius:10px;padding:11px 4px}
+.mestats>div{flex:1}
+.mestats .v{font-size:16px;font-weight:600;font-variant-numeric:tabular-nums}
+.mestats .l{font-size:10px;color:var(--text2);margin-top:2px}
+.mesec{margin-top:14px}
+.mesec .sh{font-size:14px;font-weight:600;margin-bottom:8px;display:flex;align-items:baseline;justify-content:space-between}
+.mesec .sh span{font-size:11px;color:var(--text3);font-weight:400}
+.mebatch{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:12px 14px;margin-bottom:10px}
+.mebatch .bt{font-size:15px;font-weight:600;display:flex;align-items:center;justify-content:space-between}
+.mebatch .bd{font-size:12px;color:var(--text3);margin-top:2px;margin-bottom:8px}
+.mebatch .bprog{font-size:12px;color:var(--text2);font-variant-numeric:tabular-nums}
+.pdots{display:flex;gap:4px;margin-top:6px}
+.pdots i{width:12px;height:12px;border-radius:4px;background:#E3E0D8}
+.pdots i.ok{background:var(--success)} .pdots i.cur{background:var(--primary)}
+.btn-main:active{background:var(--primary-strong);transform:scale(.98)}
+.btn-ghost{display:block;width:100%;background:var(--surface);color:var(--text);border:1px solid var(--border);border-radius:24px;padding:13px 0;font-size:15px;font-weight:500;cursor:pointer}
+.listend{text-align:center;font-size:12px;color:var(--text3);padding:6px 0 20px}
+
+/* ===== tabbar ===== */
+.tabbar{position:absolute;left:0;right:0;bottom:0;display:flex;background:var(--surface);border-top:1px solid var(--border);padding:8px 0 14px;z-index:5}
+.tabbar .ti{flex:1;text-align:center;font-size:11px;color:var(--text3);cursor:pointer}
+.tabbar .ti.on{color:var(--primary-strong)}
+.tabbar .ic{width:22px;height:22px;margin:0 auto 3px;border-radius:6px;border:2px solid #D3D1C7}
+.tabbar .ti.on .ic{border-color:var(--primary);background:var(--primary-soft)}
+
+/* ===== 答题页 ===== */
+.quiztop{display:flex;align-items:center;gap:10px;padding:16px}
+.back{width:32px;height:32px;border-radius:50%;border:1px solid var(--border);background:var(--surface);display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--text2);font-size:16px}
+.prog{flex:1;font-size:13px;color:var(--text2);text-align:center;font-variant-numeric:tabular-nums}
+.prog b{color:var(--text);font-weight:600}
+.dots{display:flex;gap:5px;justify-content:center;margin:2px 0 6px}
+.dots i{width:8px;height:8px;border-radius:50%;background:#DDD9D0}
+.dots i.ok{background:var(--success)} .dots i.bad{background:var(--danger)} .dots i.cur{background:var(--primary)}
+.stageword{text-align:center;padding:34px 24px 10px}
+.stageword .w{font-size:42px;font-weight:600;line-height:1.15;min-height:50px}
+.stageword .p{font-size:15px;color:var(--text2);margin-top:8px}
+.speakbtn{width:88px;height:88px;border-radius:50%;background:var(--surface);border:1px solid var(--border);display:flex;flex-direction:column;align-items:center;justify-content:center;margin:14px auto 6px;cursor:pointer;gap:4px}
+.speakbtn:active{background:var(--primary-soft)}
+.speakbtn .lbl{font-size:11px;color:var(--text2)}
+.hintcn{text-align:center;font-size:20px;font-weight:600;padding:26px 24px 8px}
+.hinttip{text-align:center;font-size:12px;color:var(--text3)}
+.opts{padding:14px 20px 0;display:flex;flex-direction:column;gap:12px}
+.opt{min-height:56px;background:var(--surface);border:1.5px solid var(--border);border-radius:12px;font-size:17px;color:var(--text);display:flex;align-items:center;justify-content:center;cursor:pointer;padding:8px 14px;text-align:center}
+.opt:active{transform:scale(.98)}
+.opt.right{border-color:var(--success);background:var(--success-soft);color:var(--success);font-weight:600}
+.opt.wrongpick{border-color:var(--danger);background:var(--danger-soft);color:var(--danger);animation:shake .3s}
+.opt.dim{opacity:.45;pointer-events:none}
+@keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-6px)}75%{transform:translateX(6px)}}
+
+/* 答错反馈卡 */
+.fb{margin:16px 20px 0;background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:14px;animation:up .24s ease-out}
+@keyframes up{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+.fb .ft{font-size:14px;font-weight:600;color:var(--danger);margin-bottom:8px}
+.fb .fa{display:flex;gap:10px;font-size:14px;padding:3px 0}
+.fb .fa b{font-weight:600;min-width:88px}
+.fb .fa span{color:var(--text2)}
+.fbbtns{display:flex;gap:10px;margin-top:12px}
+.fbbtns .redo{flex:1.4;background:var(--primary);color:#fff;border:none;border-radius:22px;min-height:44px;font-size:15px;font-weight:600;cursor:pointer}
+.fbbtns .next{flex:1;background:var(--surface);border:1px solid var(--border);border-radius:22px;min-height:44px;font-size:15px;color:var(--text2);cursor:pointer}
+.fbbtns .nextonly{flex:1;background:var(--primary);color:#fff;border:none;border-radius:22px;min-height:44px;font-size:15px;font-weight:600;cursor:pointer}
+
+/* ===== 完成弹窗 ===== */
+.mask{position:absolute;inset:0;background:rgba(28,26,22,.55);display:none;align-items:center;justify-content:center;z-index:20;padding:24px}
+.mask.show{display:flex}
+.modal{width:100%;background:var(--surface);border-radius:20px;padding:24px 20px 20px;animation:up .24s ease-out;text-align:center}
+.modal .cele{width:72px;height:72px;margin:0 auto 8px;border-radius:50%;background:var(--primary-soft);display:flex;align-items:center;justify-content:center}
+.modal h2{font-size:20px;font-weight:600;margin:6px 0 2px}
+.modal .msub{font-size:13px;color:var(--text2)}
+.mstats{display:flex;text-align:center;background:var(--bg);border-radius:10px;padding:12px 4px;margin-top:8px}
+.mstats>div{flex:1}
+.mstats .v{font-size:19px;font-weight:600;font-variant-numeric:tabular-nums}
+.mstats .v.good{color:var(--success)} .mstats .v.badc{color:var(--danger)}
+.mstats .l{font-size:11px;color:var(--text2);margin-top:2px}
+.mbtns{display:flex;gap:10px;margin-top:16px}
+.mbtns button{flex:1;min-height:46px;border-radius:23px;font-size:15px;cursor:pointer;border:none}
+.mbtns .b2{background:var(--surface);border:1px solid var(--border)!important;color:var(--text2)}
+.mbtns .b1{background:var(--primary);color:#fff;font-weight:600}
+.mdone{width:100%;min-height:48px;background:var(--primary);color:#fff;border:none;border-radius:24px;font-size:16px;font-weight:600;cursor:pointer;margin-top:10px}
+
+/* ===== 错题页 ===== */
+.wpage{padding:16px}
+.wcard{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:14px;margin-bottom:12px}
+.wcard .wrow{display:flex;align-items:baseline;gap:10px}
+.wcard .w{font-size:22px;font-weight:600}
+.wcard .ph{font-size:13px;color:var(--text2)}
+.wcard .mm{font-size:14px;color:var(--text2);margin-top:6px}
+.wcard .tag{font-size:11px;color:var(--danger);background:var(--danger-soft);border-radius:6px;padding:2px 8px;margin-left:auto}
+
+/* toast */
+.toast{position:absolute;left:50%;bottom:110px;transform:translateX(-50%);background:rgba(38,38,31,.9);color:#fff;font-size:13px;border-radius:20px;padding:9px 18px;display:none;z-index:30}
+.toast.show{display:block}
+/* 登录页（FR-C-03） */
+.logincover{position:absolute;inset:0;background:linear-gradient(165deg,#FFF9F2,#F5F0E7);z-index:40;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:28px}
+.logincover.hide{display:none}
+.lg-logo{width:64px;height:64px;border-radius:20px;background:#fff;border:1px solid #ECEAE4;display:flex;align-items:center;justify-content:center;box-shadow:0 6px 18px rgba(38,38,31,.06)}
+.lg-title{font-size:20px;font-weight:700;margin-top:14px}
+.lg-sub{font-size:12px;color:var(--text2,#8A887F);margin-top:4px}
+.lg-card{width:100%;background:#fff;border:1px solid #ECEAE4;border-radius:16px;padding:18px 16px;margin-top:22px}
+.lg-row{display:flex;align-items:center;gap:10px;border:1px solid #ECEAE4;border-radius:10px;padding:11px 12px;margin-bottom:10px;background:#FDFCF9}
+.lg-row label{font-size:12px;color:#8A887F;width:34px;flex:none}
+.lg-row input{border:none;outline:none;background:transparent;font-size:14px;flex:1;font-family:inherit}
+.lg-btn{width:100%;border:none;background:var(--primary,#FF8F1F);color:#fff;border-radius:24px;padding:13px 0;font-size:15px;font-weight:600;cursor:pointer;margin-top:4px}
+.lg-tip{font-size:11px;color:#B0ADA2;text-align:center;margin-top:10px;line-height:1.6}
+.note{max-width:375px;margin:10px auto 30px;font-size:12px;color:#8A887F;line-height:1.7;padding:0 8px}
+</style>
+</head>
+<body>
+
+<div class="phone">
+
+  <!-- ========== 登录页（FR-C-03，2026-10-10 新增） ========== -->
+  <div class="logincover" id="lg">
+    <div class="lg-logo">
+      <svg width="34" height="34" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+        <path d="M12 22v-9" stroke="#3FA66A" stroke-width="2" stroke-linecap="round"/>
+        <path d="M12 13C12 8.5 8.8 6 4.5 6c0 4.5 3.2 7 7.5 7z" fill="#3FA66A"/>
+        <path d="M12 11c0-4.5 3.2-7 7.5-7 0 4.5-3.2 7-7.5 7z" fill="#7BC896"/>
+      </svg>
+    </div>
+    <div class="lg-title">木芽英语</div>
+    <div class="lg-sub">21 天抗遗忘复习 · 学员端</div>
+    <div class="lg-card">
+      <div class="lg-row"><label>账号</label><input id="lg-u" value="MB2026-0128"></div>
+      <div class="lg-row"><label>密码</label><input id="lg-p" type="password" value="123456"></div>
+      <button class="lg-btn" onclick="doLoginC()">登 录</button>
+      <div class="lg-tip">演示默认账号：MB2026-0128 / 123456<br>账号由老师后台创建，忘记密码请联系老师重置</div>
+    </div>
+  </div>
+  <script>
+    function doLoginC(){
+      var u = document.getElementById('lg-u').value.trim();
+      var p = document.getElementById('lg-p').value;
+      if (u === 'MB2026-0128' && p === '123456') {
+        document.getElementById('lg').classList.add('hide');
+        showToast('登录成功，欢迎回来，朵朵');
+      } else {
+        showToast('账号或密码错误（默认 MB2026-0128 / 123456）');
+      }
+    }
+    function showToast(msg){
+      var t = document.getElementById('toast');
+      if (!t) { alert(msg); return; }
+      t.textContent = msg; t.classList.add('show');
+      clearTimeout(showToast._t);
+      showToast._t = setTimeout(function(){ t.classList.remove('show'); }, 2400);
+    }
+  </script>
+
+  <!-- ========== C1 复习列表页 ========== -->
+  <section class="screen active" id="s-list">
+    <div class="brandbar">
+      <div class="logo">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+          <path d="M12 22v-9" stroke="#3FA66A" stroke-width="2" stroke-linecap="round"/>
+          <path d="M12 13C12 8.5 8.8 6 4.5 6c0 4.5 3.2 7 7.5 7z" fill="#3FA66A"/>
+          <path d="M12 11c0-4.5 3.2-7 7.5-7 0 4.5-3.2 7-7.5 7z" fill="#7BC896"/>
+        </svg>
+      </div>
+      <div>
+        <div class="brandname">木芽英语</div>
+        <div class="brandsub">21 天抗遗忘复习</div>
+      </div>
+    </div>
+
+    <div class="tabs" role="tablist">
+      <div class="t on" data-f="all" role="tab" aria-selected="true">全部</div>
+      <div class="t" data-f="done" role="tab" aria-selected="false">已复习</div>
+      <div class="t" data-f="todo" role="tab" aria-selected="false">未复习</div>
+    </div>
+
+    <div class="daygroup">
+      <div class="daytitle">2026-10-10 周六 <span class="wd">今天</span></div>
+
+      <!-- 已复习卡（含 PRD 17:29 四项增量） -->
+      <div class="card" data-k="done">
+        <div class="ct">阶段词汇 Unit 3（第 3 天）</div>
+        <div class="cd">上课日期：2026-10-08 · 已复习 1 次</div>
+        <div class="statrow">
+          <div><div class="v">12</div><div class="l">已复习单词</div></div>
+          <div><div class="v">92%</div><div class="l">正确率</div></div>
+          <div><div class="v" style="font-size:14px;padding-top:3px">昨天 20:31</div><div class="l">完成时间</div></div>
+        </div>
+        <div class="wrongwrap">
+          <div class="wrongtoggle" onclick="toggleWrong(this)">
+            错误单词（2）<span class="arr">▾</span>
+          </div>
+          <div class="wronglist">
+            <div class="wi"><b>elephant</b><span>n. 大象</span></div>
+            <div class="wi"><b>wonderful</b><span>adj. 精彩的，绝妙的</span></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 未复习卡 -->
+      <div class="card" data-k="todo">
+        <div class="chead">
+          <div>
+            <div class="ct">阶段词汇 Unit 4（第 1 天）</div>
+            <div class="cd">上课日期：2026-10-09 · 待复习 10 词</div>
+          </div>
+          <button class="btn-sm" onclick="startQuiz()">开始复习</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="daygroup">
+      <div class="daytitle">2026-10-09 周五</div>
+      <div class="card" data-k="done">
+        <div class="ct">阶段词汇 Unit 2（第 9 天）</div>
+        <div class="cd">上课日期：2026-09-20 · 已复习 1 次</div>
+        <div class="statrow">
+          <div><div class="v">10</div><div class="l">已复习单词</div></div>
+          <div><div class="v">100%</div><div class="l">正确率</div></div>
+          <div><div class="v" style="font-size:14px;padding-top:3px">10-09 19:02</div><div class="l">完成时间</div></div>
+        </div>
+        <div class="wrongwrap">
+          <div class="allright">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="12" cy="12" r="10" fill="#22A45D"/><path d="M8 12.5l2.6 2.6L16 9.5" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            本次全部正确
+          </div>
+        </div>
+      </div>
+      <div class="card" data-k="todo" style="opacity:.85">
+        <div class="chead">
+          <div>
+            <div class="ct">阶段词汇 Unit 1（第 14 天）</div>
+            <div class="cd">上课日期：2026-09-11 · 待复习 8 词</div>
+          </div>
+          <button class="btn-sm" onclick="startQuiz()">开始复习</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="listend">— 今天没有更多复习了 —</div>
+
+    <nav class="tabbar">
+      <div class="ti on" data-p="s-list" onclick="switchTab(this)"><div class="ic"></div>复习</div>
+      <div class="ti" data-p="s-me" onclick="switchTab(this)"><div class="ic" style="border-radius:50%"></div>我的</div>
+    </nav>
+  </section>
+
+  <!-- ========== C5 我的页（数据均来自 PRD 已有口径，无新增功能） ========== -->
+  <section class="screen" id="s-me">
+    <div class="brandbar">
+      <div class="logo">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+          <path d="M12 22v-9" stroke="#3FA66A" stroke-width="2" stroke-linecap="round"/>
+          <path d="M12 13C12 8.5 8.8 6 4.5 6c0 4.5 3.2 7 7.5 7z" fill="#3FA66A"/>
+          <path d="M12 11c0-4.5 3.2-7 7.5-7 0 4.5-3.2 7-7.5 7z" fill="#7BC896"/>
+        </svg>
+      </div>
+      <div>
+        <div class="brandname">木芽英语</div>
+        <div class="brandsub">21 天抗遗忘复习</div>
+      </div>
+    </div>
+
+    <div class="mepage">
+      <!-- 个人卡（FR-C-01：账号由老师后台创建，学员编码为登录标识） -->
+      <div class="mecard">
+        <div class="meavatar">
+          <svg width="30" height="30" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+            <circle cx="12" cy="8.5" r="3.6" fill="#3FA66A"/>
+            <path d="M5 20c.8-4 3.6-6 7-6s6.2 2 7 6" stroke="#3FA66A" stroke-width="2.4" stroke-linecap="round"/>
+          </svg>
+        </div>
+        <div>
+          <div class="mename">朵朵</div>
+          <div class="mecode">
+            账号 MB2026-0128
+          </div>
+        </div>
+      </div>
+
+      <!-- 随机文案：5 句「单词重在复习」中取一句 -->
+      <div class="meslogan" id="meslogan" role="status"></div>
+
+      <!-- 三张时间维度卡片：今日 / 本周 / 本月（口径 = PRD 10.2） -->
+      <div class="mperiod">
+        <div class="ph"><span class="pd"></span>今日</div>
+        <div class="mestats">
+          <div><div class="v">12</div><div class="l">复习单词数</div></div>
+          <div><div class="v">1</div><div class="l">复习天数</div></div>
+          <div><div class="v" style="font-size:13px;padding-top:3px">4分12秒</div><div class="l">复习时间</div></div>
+          <div><div class="v" style="color:var(--success)">92%</div><div class="l">平均正确率</div></div>
+        </div>
+      </div>
+
+      <div class="mperiod">
+        <div class="ph"><span class="pd"></span>本周</div>
+        <div class="mestats">
+          <div><div class="v">58</div><div class="l">复习单词数</div></div>
+          <div><div class="v">5</div><div class="l">复习天数</div></div>
+          <div><div class="v" style="font-size:13px;padding-top:3px">22分08秒</div><div class="l">复习时间</div></div>
+          <div><div class="v" style="color:var(--success)">91%</div><div class="l">平均正确率</div></div>
+        </div>
+      </div>
+
+      <div class="mperiod">
+        <div class="ph"><span class="pd"></span>本月</div>
+        <div class="mestats">
+          <div><div class="v">226</div><div class="l">复习单词数</div></div>
+          <div><div class="v">21</div><div class="l">复习天数</div></div>
+          <div><div class="v" style="font-size:13px;padding-top:3px">1小时48分</div><div class="l">复习时间</div></div>
+          <div><div class="v" style="color:var(--success)">90%</div><div class="l">平均正确率</div></div>
+        </div>
+      </div>
+
+      <!-- 我的批次（批次与 10 次复习点均为 PRD 既有实体） -->
+      <div class="mesec">
+        <div class="sh">我的批次 <span>复习点：第 1·2·3·5·7·9·12·14·17·21 天</span></div>
+
+        <div class="mebatch">
+          <div class="bt">阶段词汇 Unit 1<span class="bprog">8 / 10 次</span></div>
+          <div class="bd">上课日期：2026-09-11</div>
+          <div class="pdots"><i class="ok"></i><i class="ok"></i><i class="ok"></i><i class="ok"></i><i class="ok"></i><i class="ok"></i><i class="ok"></i><i class="ok"></i><i class="cur"></i><i></i></div>
+        </div>
+
+        <div class="mebatch">
+          <div class="bt">阶段词汇 Unit 2<span class="bprog">6 / 10 次</span></div>
+          <div class="bd">上课日期：2026-09-20</div>
+          <div class="pdots"><i class="ok"></i><i class="ok"></i><i class="ok"></i><i class="ok"></i><i class="ok"></i><i class="ok"></i><i class="cur"></i><i></i><i></i><i></i></div>
+        </div>
+
+        <div class="mebatch">
+          <div class="bt">阶段词汇 Unit 3<span class="bprog">3 / 10 次</span></div>
+          <div class="bd">上课日期：2026-10-08</div>
+          <div class="pdots"><i class="ok"></i><i class="ok"></i><i class="ok"></i><i class="cur"></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
+        </div>
+
+        <div class="mebatch">
+          <div class="bt">阶段词汇 Unit 4<span class="bprog">0 / 10 次</span></div>
+          <div class="bd">上课日期：2026-10-09</div>
+          <div class="pdots"><i class="cur"></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
+        </div>
+      </div>
+    </div>
+
+    <nav class="tabbar">
+      <div class="ti" data-p="s-list" onclick="switchTab(this)"><div class="ic"></div>复习</div>
+      <div class="ti on" data-p="s-me" onclick="switchTab(this)"><div class="ic" style="border-radius:50%"></div>我的</div>
+    </nav>
+  </section>
+
+  <!-- ========== C2 答题页 ========== -->
+  <section class="screen" id="s-quiz">
+    <div class="quiztop">
+      <button class="back" onclick="backToList()" aria-label="返回列表">‹</button>
+      <div class="prog" id="prog">第 <b>1</b> / 10 题</div>
+    </div>
+    <div class="dots" id="dots"></div>
+
+    <div id="stage">
+      <!-- 题型 B：看词选义 -->
+      <div class="stageword" id="qB">
+        <div class="w" id="qw">well</div>
+        <div class="p" id="qp">/wel/</div>
+      </div>
+      <!-- 题型 A：听音选词 -->
+      <div id="qA" style="display:none">
+        <div class="speakbtn" onclick="speak()" role="button" aria-label="播放单词发音">
+          <svg width="34" height="34" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+            <path d="M4 9v6h3.5L13 20V4L7.5 9H4z" fill="#26261F"/>
+            <path d="M16 8.5a5 5 0 010 7M18.5 6a8.5 8.5 0 010 12" stroke="#FF8F1F" stroke-width="1.8" stroke-linecap="round"/>
+          </svg>
+          <div class="lbl">点击播放</div>
+        </div>
+        <div class="hintcn" id="qh">潜水者；</div>
+        <div class="hinttip">听发音，选出对应的单词</div>
+      </div>
+    </div>
+
+    <div class="opts" id="opts"></div>
+    <div id="fbwrap"></div>
+  </section>
+
+  <!-- ========== C4 错题回顾页 ========== -->
+  <section class="screen" id="s-wrong">
+    <div class="quiztop">
+      <button class="back" onclick="backToList()" aria-label="返回列表">‹</button>
+      <div class="prog"><b>本场错题</b></div>
+    </div>
+    <div class="wpage" id="wlist"></div>
+  </section>
+
+  <!-- ========== C3 完成弹窗 ========== -->
+  <div class="mask" id="mask">
+    <div class="modal" role="dialog" aria-label="复习完成">
+      <div class="cele">
+        <svg width="40" height="40" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+          <path d="M12 22v-8" stroke="#3FA66A" stroke-width="2.2" stroke-linecap="round"/>
+          <path d="M12 14C12 9.5 8.8 7 4.5 7c0 4.5 3.2 7 7.5 7z" fill="#3FA66A"/>
+          <path d="M12 12c0-4.5 3.2-7 7.5-7 0 4.5-3.2 7-7.5 7z" fill="#7BC896"/>
+        </svg>
+      </div>
+      <h2>已完成</h2>
+      <div class="msub">小芽又长高了一点，明天记得回来</div>
+      <div class="mstats">
+        <div><div class="v good" id="m-ok">9</div><div class="l">成功数</div></div>
+        <div><div class="v badc" id="m-bad">1</div><div class="l">错误数</div></div>
+        <div><div class="v" id="m-acc">90%</div><div class="l">正确率</div></div>
+        <div><div class="v" id="m-time">70s</div><div class="l">总用时</div></div>
+      </div>
+      <div class="mbtns" id="mbtns"></div>
+      <button class="mdone" onclick="backToList(true)">确定</button>
+    </div>
+  </div>
+
+  <div class="toast" id="toast">发音播放失败，已显示音标</div>
+</div>
+
+<p class="note">木芽英语 C 端高保真原型 · 复习列表 / 答题页（听音选词 + 看词选义，对错反馈与重做本题）/ 完成弹窗 / 错题回顾 / 我的（姓名 + 账号 + 今日/本周/本月三张统计卡片 + 随机复习文案 + 批次进度，2026-10-10 用户补充需求） · 听音题使用浏览器语音合成，失败时自动降级显示音标 · 除「我的」页外均严格对应 PRD v1.0</p>
+
+<script>
+/* ---------- 数据 ---------- */
+const WORDS = [
+  {w:'well', p:'/wel/', m:'adv. 很好地'},
+  {w:'elephant', p:'/ˈelɪfənt/', m:'n. 大象'},
+  {w:'wonderful', p:'/ˈwʌndəfl/', m:'adj. 精彩的'},
+  {w:'diver', p:'/ˈdaɪvər/', m:'n. 潜水者'},
+  {w:'madam', p:'/ˈmædəm/', m:'n. 女士'},
+  {w:'type', p:'/taɪp/', m:'n. 类型；v. 打字'},
+  {w:'evening', p:'/ˈiːvnɪŋ/', m:'n. 晚上'},
+  {w:'top', p:'/tɒp/', m:'n. 顶端'},
+  {w:'point', p:'/pɔɪnt/', m:'v. 指向；n. 点'},
+  {w:'brave', p:'/breɪv/', m:'adj. 勇敢的'}
+];
+const shuffle = a => a.slice().sort(() => Math.random() - .5);
+
+let Q = [], qi = 0, results = [], t0 = 0, locked = false;
+
+/* ---------- Tab 筛选 ---------- */
+document.querySelectorAll('.tabs .t').forEach(t => {
+  t.onclick = () => {
+    document.querySelectorAll('.tabs .t').forEach(x => {x.classList.remove('on'); x.setAttribute('aria-selected','false');});
+    t.classList.add('on'); t.setAttribute('aria-selected','true');
+    const f = t.dataset.f;
+    document.querySelectorAll('.card').forEach(c => {
+      c.style.display = (f === 'all' || c.dataset.k === f) ? '' : 'none';
+    });
+    document.querySelectorAll('.daygroup').forEach(g => {
+      const any = [...g.querySelectorAll('.card')].some(c => c.style.display !== 'none');
+      g.style.display = any ? '' : 'none';
+    });
+  };
+});
+function toggleWrong(el){
+  el.classList.toggle('open');
+  el.nextElementSibling.classList.toggle('show');
+}
+
+/* ---------- 底部 Tab 切换 ---------- */
+function switchTab(el){
+  document.querySelectorAll('.tabbar .ti').forEach(t => t.classList.remove('on'));
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  el.classList.add('on');
+  document.getElementById(el.dataset.p).classList.add('active');
+}
+
+/* ---------- 我的页：随机文案（5 句取 1） ---------- */
+const SLOGANS = [
+  '单词重在复习，今天见过的单词，明天再见一面。',
+  '复习一次，记得更牢一次。',
+  '忘了没关系，再复习一遍就回来了。',
+  '每一次复习，都是小芽在长高。',
+  '今天复习的单词，才真正属于你。'
+];
+(function(){
+  const s = SLOGANS[Math.floor(Math.random() * SLOGANS.length)];
+  document.getElementById('meslogan').innerHTML =
+    '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" aria-hidden="true" style="flex:none">' +
+    '<path d="M12 22v-8" stroke="#E67E00" stroke-width="2" stroke-linecap="round"/>' +
+    '<path d="M12 14C12 9.5 8.8 7 4.5 7c0 4.5 3.2 7 7.5 7z" fill="#E67E00"/>' +
+    '<path d="M12 12c0-4.5 3.2-7 7.5-7 0 4.5-3.2 7-7.5 7z" fill="#FF8F1F"/></svg>' + s;
+})();
+
+/* ---------- 答题流程 ---------- */
+function startQuiz(retryList){
+  Q = shuffle(retryList && retryList.length ? retryList : WORDS).map(x => ({
+    ...x,
+    type: Math.random() < .5 ? 'A' : 'B',
+    opts: shuffle([x, ...shuffle(WORDS.filter(o => o.w !== x.w)).slice(0, 3)])
+  }));
+  qi = 0; results = Q.map(() => null); t0 = Date.now();
+  document.getElementById('s-list').classList.remove('active');
+  document.getElementById('s-quiz').classList.add('active');
+  renderQ();
+}
+function renderQ(){
+  locked = false;
+  document.getElementById('fbwrap').innerHTML = '';
+  const q = Q[qi];
+  document.getElementById('prog').innerHTML = '第 <b>' + (qi + 1) + '</b> / ' + Q.length + ' 题';
+  document.getElementById('dots').innerHTML = Q.map((_, i) =>
+    '<i class="' + (results[i] === true ? 'ok' : results[i] === false ? 'bad' : i === qi ? 'cur' : '') + '"></i>').join('');
+  const isA = q.type === 'A';
+  document.getElementById('qA').style.display = isA ? '' : 'none';
+  document.getElementById('qB').style.display = isA ? 'none' : '';
+  if (isA) {
+    document.getElementById('qh').textContent = q.m + '；';
+    setTimeout(speak, 350);
+  } else {
+    document.getElementById('qw').textContent = q.w;
+    document.getElementById('qp').textContent = q.p;
+  }
+  document.getElementById('opts').innerHTML = q.opts.map(o =>
+    '<div class="opt" data-v="' + o.w + '" onclick="pick(this)">' + (isA ? o.w : o.m) + '</div>').join('');
+}
+function pick(el){
+  if (locked) return; locked = true;
+  const q = Q[qi], v = el.dataset.v, ok = (v === q.w);
+  results[qi] = ok;
+  document.querySelectorAll('.opt').forEach(o => {
+    if (o.dataset.v === q.w) o.classList.add('right');
+    else if (o === el) o.classList.add('wrongpick');
+    else o.classList.add('dim');
+  });
+  const dots = document.getElementById('dots').children;
+  dots[qi].className = ok ? 'ok' : 'bad';
+  if (ok) { setTimeout(nextQ, 650); }
+  else showFb(q, true);
+}
+function showFb(q, canRedo){
+  document.getElementById('fbwrap').innerHTML =
+    '<div class="fb"><div class="ft">答错了</div>' +
+    '<div class="fa"><b>' + q.w + '</b><span>' + q.p + '　' + q.m + '</span></div>' +
+    (canRedo
+      ? '<div class="fbbtns"><button class="redo" onclick="redoQ()">重做本题</button><button class="next" onclick="nextQ()">下一题</button></div>'
+      : '<div class="fbbtns"><button class="nextonly" onclick="nextQ()">下一题</button></div>') +
+    '</div>';
+}
+function redoQ(){
+  const q = Q[qi];
+  q.opts = shuffle(q.opts);
+  results[qi] = null;
+  renderQ();
+}
+function nextQ(){
+  if (qi < Q.length - 1) { qi++; renderQ(); }
+  else finish();
+}
+function speak(){
+  const q = Q[qi];
+  try {
+    const u = new SpeechSynthesisUtterance(q.w);
+    u.lang = 'en-US'; u.rate = .85;
+    speechSynthesis.cancel();
+    speechSynthesis.speak(u);
+    setTimeout(() => { if (!speechSynthesis.speaking) failTTS(q); }, 1200);
+  } catch(e) { failTTS(q); }
+}
+function failTTS(q){
+  if (q.type !== 'A') return;
+  const t = document.getElementById('toast');
+  t.classList.add('show');
+  document.getElementById('qh').textContent = q.m + '；（' + q.p + '）';
+  setTimeout(() => t.classList.remove('show'), 2200);
+}
+
+/* ---------- 完成弹窗 ---------- */
+function finish(){
+  const ok = results.filter(r => r === true).length,
+        bad = results.filter(r => r === false).length,
+        acc = Math.round(ok / Q.length * 100),
+        sec = Math.round((Date.now() - t0) / 1000);
+  document.getElementById('m-ok').textContent = ok;
+  document.getElementById('m-bad').textContent = bad;
+  document.getElementById('m-acc').textContent = acc + '%';
+  document.getElementById('m-time').textContent = sec + 's';
+  const wrongWords = Q.filter((_, i) => results[i] === false);
+  const btns = [];
+  if (wrongWords.length) {
+    btns.push('<button class="b2" onclick="retryWrong()">重做错题</button>');
+    btns.push('<button class="b2" onclick="viewWrong()">查看错题</button>');
+  }
+  document.getElementById('mbtns').innerHTML = btns.join('');
+  document.getElementById('mask').classList.add('show');
+}
+function retryWrong(){
+  document.getElementById('mask').classList.remove('show');
+  const wrongWords = Q.filter((_, i) => results[i] === false).map(q => WORDS.find(w => w.w === q.w));
+  startQuiz(wrongWords);
+}
+function viewWrong(){
+  document.getElementById('mask').classList.remove('show');
+  const wrong = Q.filter((_, i) => results[i] === false);
+  document.getElementById('wlist').innerHTML = wrong.length
+    ? wrong.map(q =>
+        '<div class="wcard"><div class="wrow"><span class="w">' + q.w + '</span><span class="ph">' + q.p + '</span><span class="tag">答错</span></div><div class="mm">' + q.m + '</div></div>').join('')
+    : '<div class="wcard" style="text-align:center;padding:30px 14px"><div class="ct" style="margin-bottom:6px">本场没有错题</div><div class="cd">全部答对，继续保持</div></div>';
+  document.getElementById('s-quiz').classList.remove('active');
+  document.getElementById('s-wrong').classList.add('active');
+}
+function backToList(done){
+  document.getElementById('mask').classList.remove('show');
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById('s-list').classList.add('active');
+  if (done) {
+    const c = document.querySelector('[data-k="todo"] .btn-sm');
+    if (c) { c.textContent = '已完成'; c.disabled = true; }
+  }
+}
+</script>
+</body>
+</html>

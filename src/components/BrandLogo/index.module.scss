@@ -1,0 +1,71 @@
+.logo {
+  width: 72rpx;
+  height: 72rpx;
+  border-radius: 20rpx;
+  background: #eaf4ee;
+  position: relative;
+  flex: none;
+  overflow: hidden;
+
+  &.lg {
+    width: 128rpx;
+    height: 128rpx;
+    border-radius: 40rpx;
+    background: #ffffff;
+    border: 2rpx solid #eceae4;
+    box-shadow: 0 12rpx 36rpx rgba(38, 38, 31, 0.06);
+  }
+}
+
+.leafLeft {
+  position: absolute;
+  width: 34rpx;
+  height: 40rpx;
+  background: #3fa66a;
+  border-radius: 50% 50% 50% 0 / 55% 55% 45% 45%;
+  left: 14rpx;
+  top: 22rpx;
+  transform: rotate(-6deg);
+}
+
+.leafRight {
+  position: absolute;
+  width: 34rpx;
+  height: 40rpx;
+  background: #7bc896;
+  border-radius: 50% 50% 0 50% / 55% 55% 45% 45%;
+  right: 14rpx;
+  top: 22rpx;
+  transform: rotate(6deg);
+}
+
+.stem {
+  position: absolute;
+  width: 6rpx;
+  height: 34rpx;
+  background: #3fa66a;
+  left: 50%;
+  top: 44rpx;
+  transform: translateX(-50%);
+  border-radius: 999rpx;
+}
+
+.lg .leafLeft {
+  width: 60rpx;
+  height: 70rpx;
+  left: 26rpx;
+  top: 38rpx;
+}
+
+.lg .leafRight {
+  width: 60rpx;
+  height: 70rpx;
+  right: 26rpx;
+  top: 38rpx;
+}
+
+.lg .stem {
+  width: 10rpx;
+  height: 60rpx;
+  top: 76rpx;
+}

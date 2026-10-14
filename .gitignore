@@ -1,0 +1,32 @@
+# Dependencies and generated output
+/node_modules/
+/dist/
+/dist-h5/
+/admin-web/node_modules/
+/admin-web/.next/
+/admin-web/out/
+/admin-web/build/
+/admin-web/coverage/
+/admin-web/.agents/skills/
+/admin-web/.claude/skills/
+/admin-web/.cursor/skills/
+/admin-web/.devin/skills/
+
+# Local runtime and editor files
+/.pai/
+/.swc/
+/.DS_Store
+**/.DS_Store
+*.tsbuildinfo
+
+# Local secrets and developer-specific settings
+**/.env
+**/.env.*
+!/admin-web/.env.example
+/project.private.config.json
+
+# Local database and credentials
+/admin-web/prisma/*.db
+/admin-web/prisma/*.db-*
+*.pem
+*.key

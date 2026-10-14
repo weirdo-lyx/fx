@@ -1,0 +1,131 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = "file:./dev.db"
+}
+
+// ==========================================
+// 核心业务模型：抗遗忘单词复习系统
+// ==========================================
+
+// 1. 学员表 (Student) - 对应原型中的"李小明"等
+model Student {
+  id             String          @id @default(cuid())
+  studentCode    String          @unique // 学员编码，用于C端登录账号
+  password       String          // C端登录密码(建议哈希存储)
+  name           String          // 学员姓名
+  grade          String?         // 年级
+  status         String          @default("ACTIVE") // 在读状态：ACTIVE(在读) / EXPIRED(过期)
+  teacherId      String          // 关联原有的 Teacher/User 表(暂用String表示)
+  
+  batches        Batch[]         // 该学员的所有复习批次
+  reviewSessions ReviewSession[] // 该学员的所有复习/答题记录
+  
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
+}
+
+// 2. 批次表 (Batch) - 老师上传的一批单词
+model Batch {
+  id          String       @id @default(cuid())
+  name        String       // 批次名称，如 "2026-10-10复习批次"
+  studentId   String
+  student     Student      @relation(fields: [studentId], references: [id])
+  classDate   DateTime     // 实际上课/上传日期，复习计划以此为基准
+  status      String       @default("PENDING_OCR") // PENDING_OCR, PENDING_CHECK, IMPORTED, ARCHIVED
+  
+  words       Word[]       // 批次下的所有词条
+  reviewPlans ReviewPlan[] // 批次生成的复习计划(1个批次对应10条计划)
+  
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+}
+
+// 3. 词条表 (Word) - 识别出来的具体单词
+model Word {
+  id            String          @id @default(cuid())
+  batchId       String
+  batch         Batch           @relation(fields: [batchId], references: [id])
+  spelling      String          // 单词拼写，如 "apple"
+  phonetic      String?         // 音标
+  meaning       String          // 中文释义
+  audioUrl      String?         // 发音链接(TTS生成)
+  confidence    Float?          // AI识别置信度 (0-100)，用于原型中的红色低置信度高亮
+  status        String          @default("ACTIVE") // ACTIVE, DELETED(软删除)
+  
+  answers       ReviewAnswer[]  // 这个词的答题记录(用于统计易错词)
+  auditLogs     WordAuditLog[]  // 这个词的修改日志
+  
+  createdAt     DateTime        @default(now())
+  updatedAt     DateTime        @updatedAt
+}
+
+// 4. 复习计划表 (ReviewPlan) - 核心引擎：1个批次生成10条记录
+model ReviewPlan {
+  id          String          @id @default(cuid())
+  batchId     String
+  batch       Batch           @relation(fields: [batchId], references: [id])
+  reviewIndex Int             // 第几次复习 (1~10)
+  dueDate     DateTime        // 到期日 (classDate + 1/2/3/5/7/9/12/14/17/21天)
+  status      String          @default("PENDING") // PENDING(待复习), DONE(已复习), OVERDUE(逾期)
+  
+  sessions    ReviewSession[] // 一条计划可能对应一次答题记录
+  
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
+}
+
+// 5. 答题记录主表 (ReviewSession) - C端答完题提交的汇总
+model ReviewSession {
+  id           String         @id @default(cuid())
+  planId       String
+  plan         ReviewPlan     @relation(fields: [planId], references: [id])
+  studentId    String
+  student      Student        @relation(fields: [studentId], references: [id])
+  accuracy     Float          // 正确率 (0-100)
+  totalSeconds Int            // 总耗时(秒)
+  
+  answers      ReviewAnswer[] // 答题明细
+  
+  createdAt    DateTime       @default(now())
+}
+
+// 6. 答题明细表 (ReviewAnswer) - 每个词的对错记录
+model ReviewAnswer {
+  id            String        @id @default(cuid())
+  sessionId     String
+  session       ReviewSession @relation(fields: [sessionId], references: [id])
+  wordId        String
+  word          Word          @relation(fields: [wordId], references: [id])
+  isCorrect     Boolean       // 首次是否正确
+  isRetried     Boolean       @default(false) // 原型中答错会重做，记录是否重做过
+  
+  answeredAt    DateTime      @default(now())
+}
+
+// 7. 词条操作日志 (WordAuditLog) - 记录编辑、删除等操作
+model WordAuditLog {
+  id          String   @id @default(cuid())
+  wordId      String
+  word        Word     @relation(fields: [wordId], references: [id])
+  operator    String   // 操作人(如：王老师)
+  actionType  String   // EDIT, DELETE, RESTORE
+  beforeState String?  // 修改前的JSON
+  afterState  String?  // 修改后的JSON
+  createdAt   DateTime @default(now())
+}
+
+// 8. 登录尝试记录 (LoginAttempt) - 用于 5 次失败锁定逻辑
+model LoginAttempt {
+  id        String   @id @default(cuid())
+  username  String
+  ip        String?
+  success   Boolean
+  createdAt DateTime @default(now())
+}
